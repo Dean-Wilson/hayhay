@@ -2,26 +2,34 @@
   <div class="product-page">
     <Header />
     <main class="main-content">
-      <div v-if="product" class="product-detail">
+      <div v-if="displayProduct" class="product-detail">
         <div class="product-gallery">
           <div class="main-image">
+            <img
+              v-if="mainImage?.isRemote"
+              :src="mainImage.src"
+              :alt="mainImage.alt"
+            />
             <NuxtImg
-              :src="`/images/products/${product.name}/${selectedImage}`"
-              :alt="product.title"
+              v-else-if="mainImage"
+              :src="mainImage.src"
+              :alt="mainImage.alt"
               format="webp"
               quality="85"
             />
           </div>
           <div class="thumbnail-list">
             <button
-              v-for="image in images"
-              :key="image"
-              @click="selectedImage = image"
-              :class="['thumbnail', { active: selectedImage === image }]"
+              v-for="image in galleryImages"
+              :key="image.id"
+              @click="selectImage(image)"
+              :class="['thumbnail', { active: selectedImageId === image.id }]"
             >
+              <img v-if="image.isRemote" :src="image.src" :alt="image.alt" />
               <NuxtImg
-                :src="`/images/products/${product.name}/${image}`"
-                :alt="product.title"
+                v-else
+                :src="image.src"
+                :alt="image.alt"
                 format="webp"
                 quality="80"
               />
@@ -30,13 +38,41 @@
         </div>
 
         <div class="product-info">
-          <h1>{{ product.title }}</h1>
-          <p class="description">{{ product.description }}</p>
-          <!-- <p class="price">${{ product.price }}</p> -->
+          <h1>{{ displayTitle }}</h1>
+          <p class="description">{{ displayDescription }}</p>
+          <p v-if="displayPrice" class="price">{{ displayPrice }}</p>
 
-          <!-- <div class="shopify-button">
-            <div id="product-component"></div>
-          </div> -->
+          <div v-if="hasShopifyProduct" class="shopify-purchase">
+            <label
+              v-if="shopifyVariants.length > 1"
+              class="shopify-purchase__variant"
+            >
+              <span>Colour</span>
+              <select v-model="selectedVariantId">
+                <option
+                  v-for="variant in shopifyVariants"
+                  :key="variant.id"
+                  :value="variant.id"
+                  :disabled="!variant.availableForSale"
+                >
+                  {{ getVariantLabel(variant) }}
+                </option>
+              </select>
+            </label>
+
+            <button
+              class="shopify-purchase__button"
+              type="button"
+              :disabled="!selectedVariant?.availableForSale || isBuying"
+              @click="buyNow"
+            >
+              {{ buyButtonLabel }}
+            </button>
+
+            <p v-if="purchaseError" class="shopify-purchase__error">
+              {{ purchaseError }}
+            </p>
+          </div>
 
           <NuxtLink to="/products" class="back-link">
             ← Back to Products
@@ -57,18 +93,234 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProduct, getProductImages } from '~/data/products'
 
 const route = useRoute()
-const product = getProduct(route.params.name)
-const images = computed(() =>
-  product
-    ? getProductImages(product.name, product.color, product.imageCount)
+const handle = route.params.name
+const localProduct = getProduct(handle)
+const shopifyResponse = await useFetch(`/api/shopify/product/${handle}`)
+const localImages = computed(() =>
+  localProduct
+    ? getProductImages(
+        localProduct.name,
+        localProduct.color,
+        localProduct.imageCount,
+      )
     : [],
 )
-const selectedImage = ref(images.value[0] || '')
+const selectedImageId = ref('')
+const selectedVariantId = ref('')
+const isBuying = ref(false)
+const purchaseError = ref('')
+
+const shopifyProduct = computed(() => shopifyResponse.data.value?.product)
+const hasShopifyProduct = computed(() => Boolean(shopifyProduct.value))
+const displayProduct = computed(() => shopifyProduct.value || localProduct)
+const shopifyVariants = computed(
+  () => shopifyProduct.value?.variants?.nodes || [],
+)
+const selectedVariant = computed(() =>
+  shopifyVariants.value.find(
+    (variant) => variant.id === selectedVariantId.value,
+  ),
+)
+const galleryImages = computed(() => {
+  const shopifyImages = collectShopifyImages()
+
+  if (shopifyImages.length > 0) {
+    return shopifyImages
+  }
+
+  return localImages.value.map((image) => ({
+    id: image,
+    src: `/images/products/${localProduct.name}/${image}`,
+    alt: localProduct.title,
+    isRemote: false,
+  }))
+})
+const mainImage = computed(
+  () =>
+    galleryImages.value.find((image) => image.id === selectedImageId.value) ||
+    galleryImages.value[0],
+)
+const displayDescription = computed(
+  () => shopifyProduct.value?.description || localProduct?.description || '',
+)
+const displayTitle = computed(
+  () => shopifyProduct.value?.title || localProduct?.title || '',
+)
+const displayPrice = computed(() => {
+  const price = selectedVariant.value?.price
+
+  if (price) {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: price.currencyCode,
+    }).format(Number(price.amount))
+  }
+
+  return localProduct?.price ? `$${localProduct.price}` : ''
+})
+const buyButtonLabel = computed(() => {
+  if (isBuying.value) {
+    return 'Opening checkout...'
+  }
+
+  if (!selectedVariant.value?.availableForSale) {
+    return 'Sold out'
+  }
+
+  return 'Buy now'
+})
+
+watchEffect(() => {
+  if (selectedVariantId.value || shopifyVariants.value.length === 0) {
+    return
+  }
+
+  selectedVariantId.value =
+    shopifyVariants.value.find((variant) => variant.availableForSale)?.id ||
+    shopifyVariants.value[0].id
+})
+
+watchEffect(() => {
+  if (selectedImageId.value || galleryImages.value.length === 0) {
+    return
+  }
+
+  selectedImageId.value =
+    getImageForVariant(selectedVariant.value)?.id || galleryImages.value[0].id
+})
+
+watch(selectedVariantId, () => {
+  const variantImage = getImageForVariant(selectedVariant.value)
+
+  if (variantImage) {
+    selectedImageId.value = variantImage.id
+  }
+})
+
+function collectShopifyImages() {
+  const imagesById = new Map()
+
+  const addImage = (image, fallbackAlt = displayTitle.value) => {
+    if (!image?.url) {
+      return
+    }
+
+    imagesById.set(image.id || image.url, {
+      id: image.id || image.url,
+      src: image.url,
+      alt: image.altText || fallbackAlt,
+      isRemote: true,
+    })
+  }
+
+  addImage(shopifyProduct.value?.featuredImage)
+  shopifyProduct.value?.images?.nodes?.forEach((image) => addImage(image))
+  shopifyVariants.value.forEach((variant) =>
+    addImage(variant.image, getVariantLabel(variant)),
+  )
+
+  return Array.from(imagesById.values())
+}
+
+function getVariantImageId(variant) {
+  return variant?.image?.id || variant?.image?.url || ''
+}
+
+function getImageForVariant(variant) {
+  if (!variant) {
+    return null
+  }
+
+  const matchedImage = galleryImages.value.find((image) =>
+    imageMatchesVariant(image, variant),
+  )
+
+  if (matchedImage) {
+    return matchedImage
+  }
+
+  const variantImageId = getVariantImageId(variant)
+
+  return (
+    galleryImages.value.find((image) => image.id === variantImageId) || null
+  )
+}
+
+function imageMatchesVariant(image, variant) {
+  const variantWords = normalizeForMatch(getVariantLabel(variant))
+  const imageWords = normalizeForMatch(`${image.alt || ''} ${image.src || ''}`)
+
+  if (variantWords.length === 0 || imageWords.length === 0) {
+    return false
+  }
+
+  return variantWords.every((word) => imageWords.includes(word))
+}
+
+function normalizeForMatch(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+}
+
+function selectImage(image) {
+  selectedImageId.value = image.id
+
+  const matchingVariant = shopifyVariants.value.find(
+    (variant) =>
+      getImageForVariant(variant)?.id === image.id ||
+      getVariantImageId(variant) === image.id,
+  )
+
+  if (matchingVariant) {
+    selectedVariantId.value = matchingVariant.id
+  }
+}
+
+function getVariantLabel(variant) {
+  const colour = variant.selectedOptions?.find(
+    (option) => option.name.toLowerCase() === 'colour',
+  )
+  const color = variant.selectedOptions?.find(
+    (option) => option.name.toLowerCase() === 'color',
+  )
+
+  return colour?.value || color?.value || variant.title
+}
+
+async function buyNow() {
+  if (!selectedVariant.value?.availableForSale) {
+    return
+  }
+
+  isBuying.value = true
+  purchaseError.value = ''
+
+  try {
+    const cart = await $fetch('/api/shopify/cart', {
+      method: 'POST',
+      body: {
+        variantId: selectedVariant.value.id,
+        quantity: 1,
+      },
+    })
+
+    window.location.href = cart.checkoutUrl
+  } catch (error) {
+    purchaseError.value =
+      error?.data?.message || 'Checkout could not be opened. Please try again.'
+  } finally {
+    isBuying.value = false
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -88,7 +340,7 @@ const selectedImage = ref(images.value[0] || '')
 
 .product-detail {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 3rem;
 
   @media (max-width: 768px) {
@@ -100,7 +352,7 @@ const selectedImage = ref(images.value[0] || '')
   .main-image {
     width: 100%;
     height: 500px;
-    background-color: #f5f5f5;
+    background-color: white;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 1rem;
@@ -108,13 +360,14 @@ const selectedImage = ref(images.value[0] || '')
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
   }
 
   .thumbnail-list {
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
   }
 
   .thumbnail {
@@ -139,7 +392,7 @@ const selectedImage = ref(images.value[0] || '')
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
   }
 }
@@ -163,16 +416,55 @@ const selectedImage = ref(images.value[0] || '')
     margin-bottom: 2rem;
   }
 
-  .shopify-button {
+  .shopify-purchase {
+    display: grid;
+    gap: 1rem;
     margin-bottom: 2rem;
-    padding: 1rem;
-    border-radius: 8px;
-    text-align: center;
 
-    &::before {
-      content: 'Shopify Buy Button Placeholder';
-      display: block;
-      font-style: italic;
+    &__variant {
+      display: grid;
+      gap: 0.5rem;
+      max-width: 320px;
+      font-weight: 600;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      font: inherit;
+    }
+
+    &__button {
+      width: min(100%, 320px);
+      padding: 0.9rem 1.5rem;
+      border: 0;
+      border-radius: 4px;
+      background: #111;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      transition:
+        background 0.2s,
+        opacity 0.2s;
+
+      &:hover:not(:disabled) {
+        background: #333;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+    }
+
+    &__error {
+      max-width: 320px;
+      color: #9f1d35;
+      font-size: 0.95rem;
     }
   }
 

@@ -20,51 +20,31 @@
       </section>
 
       <section class="featured">
-        <h1
-          id="new"
-          style="
-            color: #edff00;
-            background-color: #2007ea;
-            padding: 30px 60px 70px;
-            margin-bottom: 10px;
-            width: auto;
-            display: inline-block;
-            line-height: 0.9em;
-            text-align: center;
-          "
-          class="hero__content"
-        >
-          hay-hay 
-          <br/>design
-        </h1>
-        <h1
-          data-v-02281a80=""
-          class="hero__content"
-          style="color: black; line-height: 0.8em; margin-bottom: 100px"
-        >
-          hay-hay <br data-v-02281a80="" />design
-        </h1>
         <!-- <h2>Featured Products</h2> -->
         <div class="products-grid">
           <div
             v-for="product in featuredProducts"
-            :key="product.name"
+            :key="product.handle"
             class="product-card"
           >
-            <NuxtLink :to="`/products/${product.name}`" class="product-link">
+            <NuxtLink :to="`/products/${product.handle}`" class="product-link">
               <div class="product-image">
+                <img
+                  v-if="product.image?.isRemote"
+                  :src="product.image.src"
+                  :alt="product.image.alt"
+                />
                 <NuxtImg
-                  :src="`/images/products/${product.name}/${
-                    getProductImages(product.name, product.color, 1)[0]
-                  }`"
-                  :alt="product.title"
+                  v-else-if="product.image"
+                  :src="product.image.src"
+                  :alt="product.image.alt"
                   format="webp"
                   quality="80"
                 />
               </div>
               <div class="product-info">
                 <h2>{{ product.title }}</h2>
-                <p>{{ product.description }}</p>
+                <!-- <p>{{ product.description }}</p> -->
                 <!-- <span class="price">${{ product.price }}</span> -->
               </div>
             </NuxtLink>
@@ -79,9 +59,47 @@
 
 <script setup>
 import { computed } from 'vue'
-import { products, getProductImages } from '~/data/products'
+import { products as localProducts, getProductImages } from '~/data/products'
 
-const featuredProducts = computed(() => products.filter((p) => p.featured))
+const { data: shopifyResponse } = await useFetch('/api/shopify/products')
+
+const featuredProducts = computed(() => {
+  const shopifyProducts = shopifyResponse.value?.products || []
+
+  if (shopifyProducts.length > 0) {
+    return shopifyProducts.slice(0, 3).map((product) => {
+      const image = product.featuredImage || product.images?.nodes?.[0]
+
+      return {
+        handle: product.handle,
+        title: product.title,
+        description: product.description,
+        image: image
+          ? {
+              src: image.url,
+              alt: image.altText || product.title,
+              isRemote: true,
+            }
+          : null,
+      }
+    })
+  }
+
+  return localProducts
+    .filter((product) => product.featured)
+    .map((product) => ({
+      handle: product.name,
+      title: product.title,
+      description: product.description,
+      image: {
+        src: `/images/products/${product.name}/${
+          getProductImages(product.name, product.color, 1)[0]
+        }`,
+        alt: product.title,
+        isRemote: false,
+      },
+    }))
+})
 </script>
 
 <style scoped lang="scss">
@@ -221,7 +239,7 @@ const featuredProducts = computed(() => products.filter((p) => p.featured))
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 }
 

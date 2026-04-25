@@ -39,6 +39,7 @@ export const products = [
     name: 'puff',
     color: 'cobalt',
     title: 'Puff',
+    shopifyHandle: 'puff',
     description:
       'A comfortable and stylish puff ottoman perfect for any living space.',
     price: 299,
