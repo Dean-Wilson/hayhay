@@ -20,6 +20,30 @@
       </section>
 
       <section class="featured">
+        <h1
+          id="new"
+          style="
+            color: #edff00;
+            background-color: #2007ea;
+            padding: 30px 60px 70px;
+            margin-bottom: 10px;
+            width: auto;
+            display: inline-block;
+            line-height: 0.9em;
+            text-align: center;
+          "
+          class="hero__content"
+        >
+          hay-hay 
+          <br/>design
+        </h1>
+        <h1
+          data-v-02281a80=""
+          class="hero__content"
+          style="color: black; line-height: 0.8em; margin-bottom: 100px"
+        >
+          hay-hay <br data-v-02281a80="" />design
+        </h1>
         <!-- <h2>Featured Products</h2> -->
         <div class="products-grid">
           <div
@@ -41,7 +65,7 @@
               <div class="product-info">
                 <h2>{{ product.title }}</h2>
                 <p>{{ product.description }}</p>
-                <span class="price">${{ product.price }}</span>
+                <!-- <span class="price">${{ product.price }}</span> -->
               </div>
             </NuxtLink>
           </div>
@@ -170,7 +194,9 @@ const featuredProducts = computed(() => products.filter((p) => p.featured))
 .product-card {
   border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
 
   &:hover {
     transform: translateY(-4px);

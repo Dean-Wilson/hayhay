@@ -20,6 +20,12 @@
   min-height: 100vh;
 }
 
+h1 {
+  font-size: 3.5rem;
+  margin-bottom: 2rem;
+  font-family: 'Figuratika', sans-serif;
+}
+
 .main-content {
   flex: 1;
   max-width: 1200px;

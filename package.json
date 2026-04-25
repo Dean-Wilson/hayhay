@@ -6,6 +6,7 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "generate:logos": "bash scripts/generate-logo-assets.sh",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },

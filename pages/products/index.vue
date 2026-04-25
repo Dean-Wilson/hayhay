@@ -53,7 +53,7 @@ import { products, getProductImages } from '~/data/products'
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 3.5rem;
   margin-bottom: 2rem;
   font-family: 'Figuratika', sans-serif;
 }
