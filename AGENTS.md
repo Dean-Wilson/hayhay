@@ -1,4 +1,6 @@
-# Nuxt 3 Shopify Site
+# AGENTS.md
+
+## Project Overview
 
 This is a basic Nuxt 3 website with:
 - Home page
@@ -31,23 +33,23 @@ For nested SCSS, use the `&` ampersand to create nested selectors:
 ```scss
 .component-name {
   display: flex;
-  
+
   &__element {
     font-size: 1rem;
   }
-  
+
   &__item {
     margin: 1rem 0;
-    
+
     &-title {
       font-weight: bold;
     }
-    
+
     &-text {
       color: #666;
     }
   }
-  
+
   &--modifier {
     background: #f0f0f0;
   }
