@@ -1,0 +1,13 @@
+.env
+.env.*
+.DS_Store
+.git/
+.github/
+.nuxt/
+.nitro/
+.output/
+.cache/
+dist/
+node_modules/
+logs/
+*.log

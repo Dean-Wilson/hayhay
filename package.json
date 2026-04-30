@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "deploy": "bash scripts/deploy-production.sh",
+    "deploy:check": "bash scripts/check-production-ssh.sh",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "generate:logos": "bash scripts/generate-logo-assets.sh",
@@ -17,7 +19,6 @@
   },
   "devDependencies": {
     "@nuxt/fonts": "^0.12.1",
-    "@nuxt/image": "^2.0.0",
-    "sass-embedded": "^1.97.1"
+    "sass": "^1.97.1"
   }
 }

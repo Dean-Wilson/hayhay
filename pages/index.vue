@@ -8,12 +8,10 @@
         </div>
         <div class="hero__products">
           <div class="hero__product">
-            <NuxtImg
+            <img
               src="/images/products/puff/puff-cobalt-1.png"
               alt="Puff Cobalt Vase"
               class="hero__product-image"
-              format="webp"
-              quality="80"
             />
           </div>
         </div>
@@ -34,12 +32,10 @@
                   :src="product.image.src"
                   :alt="product.image.alt"
                 />
-                <NuxtImg
+                <img
                   v-else-if="product.image"
                   :src="product.image.src"
                   :alt="product.image.alt"
-                  format="webp"
-                  quality="80"
                 />
               </div>
               <div class="product-info">
@@ -58,16 +54,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { products as localProducts, getProductImages } from '~/data/products'
 
-const { data: shopifyResponse } = await useFetch('/api/shopify/products')
+const { products: shopifyProducts, fetchProducts } = useShopifyStorefront()
+
+onMounted(() => {
+  fetchProducts()
+})
 
 const featuredProducts = computed(() => {
-  const shopifyProducts = shopifyResponse.value?.products || []
-
-  if (shopifyProducts.length > 0) {
-    return shopifyProducts.slice(0, 3).map((product) => {
+  if (shopifyProducts.value.length > 0) {
+    return shopifyProducts.value.slice(0, 3).map((product) => {
       const image = product.featuredImage || product.images?.nodes?.[0]
 
       return {
@@ -230,7 +228,6 @@ const featuredProducts = computed(() => {
 
 .product-image {
   width: 100%;
-  height: 400px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -238,8 +235,8 @@ const featuredProducts = computed(() => {
 
   img {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
+    display: block;
   }
 }
 

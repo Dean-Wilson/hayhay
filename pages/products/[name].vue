@@ -10,12 +10,10 @@
               :src="mainImage.src"
               :alt="mainImage.alt"
             />
-            <NuxtImg
+            <img
               v-else-if="mainImage"
               :src="mainImage.src"
               :alt="mainImage.alt"
-              format="webp"
-              quality="85"
             />
           </div>
           <div class="thumbnail-list">
@@ -26,12 +24,10 @@
               :class="['thumbnail', { active: selectedImageId === image.id }]"
             >
               <img v-if="image.isRemote" :src="image.src" :alt="image.alt" />
-              <NuxtImg
+              <img
                 v-else
                 :src="image.src"
                 :alt="image.alt"
-                format="webp"
-                quality="80"
               />
             </button>
           </div>
@@ -93,14 +89,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, onMounted, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProduct, getProductImages } from '~/data/products'
 
 const route = useRoute()
 const handle = route.params.name
 const localProduct = getProduct(handle)
-const shopifyResponse = await useFetch(`/api/shopify/product/${handle}`)
+const { fetchProducts, fetchProduct, createCart } = useShopifyStorefront()
+const remoteProduct = ref(null)
 const localImages = computed(() =>
   localProduct
     ? getProductImages(
@@ -115,7 +112,7 @@ const selectedVariantId = ref('')
 const isBuying = ref(false)
 const purchaseError = ref('')
 
-const shopifyProduct = computed(() => shopifyResponse.data.value?.product)
+const shopifyProduct = computed(() => remoteProduct.value)
 const hasShopifyProduct = computed(() => Boolean(shopifyProduct.value))
 const displayProduct = computed(() => shopifyProduct.value || localProduct)
 const shopifyVariants = computed(
@@ -173,6 +170,11 @@ const buyButtonLabel = computed(() => {
   }
 
   return 'Buy now'
+})
+
+onMounted(async () => {
+  await fetchProducts()
+  remoteProduct.value = await fetchProduct(handle)
 })
 
 watchEffect(() => {
@@ -305,18 +307,11 @@ async function buyNow() {
   purchaseError.value = ''
 
   try {
-    const cart = await $fetch('/api/shopify/cart', {
-      method: 'POST',
-      body: {
-        variantId: selectedVariant.value.id,
-        quantity: 1,
-      },
-    })
+    const cart = await createCart(selectedVariant.value.id)
 
     window.location.href = cart.checkoutUrl
   } catch (error) {
-    purchaseError.value =
-      error?.data?.message || 'Checkout could not be opened. Please try again.'
+    purchaseError.value = error?.message || 'Checkout could not be opened. Please try again.'
   } finally {
     isBuying.value = false
   }

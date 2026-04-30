@@ -5,6 +5,10 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FONT_PATH="$ROOT_DIR/public/fonts/figuratika/figuratika.ttf"
 OUTPUT_DIR="$ROOT_DIR/public/images/branding"
+FAVICON_OUTPUT="$ROOT_DIR/public/favicon.ico"
+FAVICON_SVG_OUTPUT="$ROOT_DIR/public/favicon.svg"
+APPLE_TOUCH_ICON_OUTPUT="$ROOT_DIR/public/apple-touch-icon.png"
+WEB_APP_ICON_OUTPUT="$ROOT_DIR/public/icon-512.png"
 STACKED_LINE_GAP=-114
 
 mkdir -p "$OUTPUT_DIR"
@@ -109,7 +113,39 @@ magick \
   -quality 95 \
   "JPEG:$STACKED_BLUE_OUTPUT"
 
+magick \
+  -size 1024x1024 \
+  xc:none \
+  -fill '#2007ea' \
+  -draw 'circle 512,512 512,0' \
+  -fill '#edff00' \
+  -font "$FONT_PATH" \
+  -pointsize 792 \
+  -kerning 0 \
+  -gravity center \
+  -annotate +0+20 'h' \
+  -strip \
+  "PNG32:$TMP_DIR/favicon-master.png"
+
+magick "$TMP_DIR/favicon-master.png" -resize 16x16 "PNG32:$TMP_DIR/favicon-16.png"
+magick "$TMP_DIR/favicon-master.png" -resize 32x32 "PNG32:$TMP_DIR/favicon-32.png"
+magick "$TMP_DIR/favicon-master.png" -resize 48x48 "PNG32:$TMP_DIR/favicon-48.png"
+magick "$TMP_DIR/favicon-16.png" "$TMP_DIR/favicon-32.png" "$TMP_DIR/favicon-48.png" "$FAVICON_OUTPUT"
+magick "$TMP_DIR/favicon-master.png" -resize 180x180 "PNG32:$APPLE_TOUCH_ICON_OUTPUT"
+magick "$TMP_DIR/favicon-master.png" -resize 512x512 "PNG32:$WEB_APP_ICON_OUTPUT"
+
+cat > "$FAVICON_SVG_OUTPUT" <<'SVG'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <circle cx="32" cy="32" r="32" fill="#2007ea"/>
+  <text x="50%" y="50%" dy=".36em" text-anchor="middle" fill="#edff00" font-family="Figuratika, serif" font-size="51">h</text>
+</svg>
+SVG
+
 echo "Generated:"
 echo "  $INLINE_OUTPUT"
 echo "  $STACKED_OUTPUT"
 echo "  $STACKED_BLUE_OUTPUT"
+echo "  $FAVICON_OUTPUT"
+echo "  $FAVICON_SVG_OUTPUT"
+echo "  $APPLE_TOUCH_ICON_OUTPUT"
+echo "  $WEB_APP_ICON_OUTPUT"

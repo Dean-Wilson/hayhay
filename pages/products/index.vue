@@ -16,12 +16,10 @@
                 :src="product.image.src"
                 :alt="product.image.alt"
               />
-              <NuxtImg
+              <img
                 v-else-if="product.image"
                 :src="product.image.src"
                 :alt="product.image.alt"
-                format="webp"
-                quality="80"
               />
             </div>
             <div class="product-info">
@@ -38,16 +36,18 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { products as localProducts, getProductImages } from '~/data/products'
 
-const { data: shopifyResponse } = await useFetch('/api/shopify/products')
+const { products: shopifyProducts, fetchProducts } = useShopifyStorefront()
+
+onMounted(() => {
+  fetchProducts()
+})
 
 const displayProducts = computed(() => {
-  const shopifyProducts = shopifyResponse.value?.products || []
-
-  if (shopifyProducts.length > 0) {
-    return shopifyProducts.map((product) => {
+  if (shopifyProducts.value.length > 0) {
+    return shopifyProducts.value.map((product) => {
       const image = product.featuredImage || product.images?.nodes?.[0]
 
       return {
@@ -128,7 +128,6 @@ h1 {
 
 .product-image {
   width: 100%;
-  height: 460px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -136,8 +135,8 @@ h1 {
 
   img {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
+    display: block;
   }
 }
 
