@@ -18,12 +18,15 @@
 }
 
 .header-content {
-  max-width: calc(100% - 200px);
   margin: 0 auto;
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding: 0 1rem;
+  max-width: calc(100% - 40px);
+  @media screen and (min-width: 782px) {
+    max-width: calc(100% - 200px);
+  }
 }
 
 .logo h1 {

@@ -3,18 +3,21 @@
 ## Project Overview
 
 This is a basic Nuxt 3 website with:
+
 - Home page
 - Product page with Shopify buy button integration
 - Wholesale page
 - Contact page
 
 ## Tech Stack
+
 - Nuxt 3
 - Vue 3
 - Shopify Buy Button
 - SCSS
 
 ## Project Structure
+
 - `/pages/index.vue` - Home page
 - `/pages/products/index.vue` - Products listing page
 - `/pages/products/[name].vue` - Product detail page with Shopify integration
@@ -24,12 +27,15 @@ This is a basic Nuxt 3 website with:
 ## Naming Conventions
 
 ### CSS/SCSS Classes - BEM (Block Element Modifier)
+
 Use BEM naming convention for all classes:
+
 - **Block**: `.block-name` (e.g., `.product-page`, `.contact-page`)
 - **Element**: `.block-name__element` (e.g., `.product-page__title`, `.contact-page__details`)
 - **Modifier**: `.block-name--modifier` (e.g., `.product-page--featured`)
 
 For nested SCSS, use the `&` ampersand to create nested selectors:
+
 ```scss
 .component-name {
   display: flex;
@@ -57,5 +63,17 @@ For nested SCSS, use the `&` ampersand to create nested selectors:
 ```
 
 ### Vue Components
+
 - Use PascalCase for component names (e.g., `Header.vue`, `Footer.vue`, `Nav.vue`)
 - Use camelCase for component props and data properties
+
+### TODO
+
+- handle shipping
+  - You can connect an Australia Post MyPost Business account to Shopify to purchase shipping labels directly from your admin when you fulfill orders.
+- about page
+- Product fields [/]
+  - product description
+  - care instructions
+  - delivery
+- Store name

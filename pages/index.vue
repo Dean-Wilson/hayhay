@@ -108,19 +108,25 @@ const featuredProducts = computed(() => {
 
 .main-content {
   flex: 1;
-  max-width: calc(100% - 200px);
   width: 100%;
   margin: 0 auto;
+  max-width: calc(100% - 40px);
+  @media screen and (min-width: 782px) {
+    max-width: calc(100% - 200px);
+  }
 }
 
 .hero {
   text-align: center;
-  padding: 100px 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
   height: calc(100vh - 100px);
   min-height: 900px;
   overflow: hidden;
+  padding: 20px 0;
+  @media screen and (min-width: 900px) {
+    padding: 100px 0;
+    grid-template-columns: 1fr 1fr;
+  }
 
   &__about {
     background-color: $blue-100;
@@ -135,10 +141,16 @@ const featuredProducts = computed(() => {
   &__content {
     padding: 2rem;
     font-family: 'Figuratika', sans-serif;
-    font-size: 10rem;
+    font-size: 5rem;
     color: $yellow-highlight;
     line-height: 1.1;
     word-break: break-word;
+    @media screen and (min-width: 782px) {
+      font-size: 7rem;
+    }
+    @media screen and (min-width: 1200px) {
+      font-size: 10rem;
+    }
   }
 
   &__products {
@@ -191,8 +203,10 @@ const featuredProducts = computed(() => {
   margin-top: 3rem;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
+  @media screen and (min-width: 900px) {
+    padding: 2rem;
+  }
   h2 {
     font-size: 1.75rem;
     margin-bottom: 2rem;
