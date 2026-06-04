@@ -38,6 +38,17 @@
           <p class="description">{{ displayDescription }}</p>
           <p v-if="displayPrice" class="price">{{ displayPrice }}</p>
 
+          <dl v-if="productDetails.length" class="product-details">
+            <div
+              v-for="detail in productDetails"
+              :key="detail.label"
+              class="product-details__item"
+            >
+              <dt>{{ detail.label }}</dt>
+              <dd>{{ detail.value }}</dd>
+            </div>
+          </dl>
+
           <div v-if="hasShopifyProduct" class="shopify-purchase">
             <label
               v-if="shopifyVariants.length > 1"
@@ -160,6 +171,22 @@ const displayPrice = computed(() => {
 
   return localProduct?.price ? `$${localProduct.price}` : ''
 })
+const productDetails = computed(() =>
+  [
+    {
+      label: 'Width',
+      value: formatMetafieldValue(shopifyProduct.value?.width),
+    },
+    {
+      label: 'Height',
+      value: formatMetafieldValue(shopifyProduct.value?.height),
+    },
+    {
+      label: 'Weight',
+      value: formatVariantWeight(selectedVariant.value),
+    },
+  ].filter((detail) => detail.value),
+)
 const buyButtonLabel = computed(() => {
   if (isBuying.value) {
     return 'Opening checkout...'
@@ -298,6 +325,68 @@ function getVariantLabel(variant) {
   return colour?.value || color?.value || variant.title
 }
 
+function formatMetafieldValue(metafield) {
+  if (!metafield?.value) {
+    return ''
+  }
+
+  try {
+    const parsedValue = JSON.parse(metafield.value)
+
+    if (parsedValue?.value && parsedValue?.unit) {
+      return `${parsedValue.value} ${formatMeasurementUnit(parsedValue.unit)}`
+    }
+  } catch {
+    // Shopify single-line metafields are already ready to display.
+  }
+
+  return metafield.value
+}
+
+function formatMeasurementUnit(unit) {
+  const normalizedUnit = unit.toLowerCase()
+  const units = {
+    centimeters: 'cm',
+    centimeter: 'cm',
+    centimetres: 'cm',
+    centimetre: 'cm',
+    millimeters: 'mm',
+    millimeter: 'mm',
+    millimetres: 'mm',
+    millimetre: 'mm',
+    meters: 'm',
+    meter: 'm',
+    metres: 'm',
+    metre: 'm',
+    inches: 'in',
+    inch: 'in',
+    feet: 'ft',
+    foot: 'ft',
+  }
+
+  return units[normalizedUnit] || normalizedUnit
+}
+
+function formatVariantWeight(variant) {
+  if (!variant?.weight) {
+    return ''
+  }
+
+  const units = {
+    GRAMS: 'g',
+    KILOGRAMS: 'kg',
+    OUNCES: 'oz',
+    POUNDS: 'lb',
+  }
+  const formattedWeight = Number.isInteger(variant.weight)
+    ? variant.weight
+    : Number(variant.weight).toLocaleString('en-AU', {
+        maximumFractionDigits: 2,
+      })
+
+  return `${formattedWeight} ${units[variant.weightUnit] || variant.weightUnit}`
+}
+
 async function buyNow() {
   if (!selectedVariant.value?.availableForSale) {
     return
@@ -411,6 +500,30 @@ async function buyNow() {
     margin-bottom: 2rem;
   }
 
+  .product-details {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 320px;
+    margin-bottom: 2rem;
+
+    &__item {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.75rem;
+    }
+
+    dt {
+      font-weight: 700;
+    }
+
+    dd {
+      margin: 0;
+      text-align: right;
+    }
+  }
+
   .shopify-purchase {
     display: grid;
     gap: 1rem;
@@ -465,12 +578,7 @@ async function buyNow() {
 
   .back-link {
     display: inline-block;
-    text-decoration: none;
     font-weight: 500;
-
-    &:hover {
-      text-decoration: underline;
-    }
   }
 }
 

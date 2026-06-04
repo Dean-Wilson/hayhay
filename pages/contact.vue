@@ -70,12 +70,10 @@
 
   &__link {
     color: #333;
-    text-decoration: none;
     transition: color 0.3s;
 
     &:hover {
       color: #666;
-      text-decoration: underline;
     }
   }
 }

@@ -15,6 +15,8 @@
                 v-if="product.image?.isRemote"
                 :src="product.image.src"
                 :alt="product.image.alt"
+                :width="product.image.width"
+                :height="product.image.height"
               />
               <img
                 v-else-if="product.image"
@@ -58,6 +60,8 @@ const displayProducts = computed(() => {
           ? {
               src: image.url,
               alt: image.altText || product.title,
+              width: image.width,
+              height: image.height,
               isRemote: true,
             }
           : null,
@@ -128,6 +132,7 @@ h1 {
 
 .product-image {
   width: 100%;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -135,8 +140,9 @@ h1 {
 
   img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
+    object-fit: cover;
   }
 }
 

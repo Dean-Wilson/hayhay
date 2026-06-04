@@ -51,6 +51,12 @@ h6 {
 
 a {
   color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  text-decoration-thickness: 0.08em;
+}
+
+a:hover {
   text-decoration: none;
 }
 

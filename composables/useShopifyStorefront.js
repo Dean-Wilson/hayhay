@@ -1,4 +1,4 @@
-const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products'
+const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v2'
 const PRODUCTS_CACHE_TTL = 1000 * 60 * 15
 
 const PRODUCTS_QUERY = `#graphql
@@ -10,6 +10,14 @@ const PRODUCTS_QUERY = `#graphql
         title
         description
         availableForSale
+        width: metafield(namespace: "custom", key: "width") {
+          value
+          type
+        }
+        height: metafield(namespace: "custom", key: "height") {
+          value
+          type
+        }
         featuredImage {
           id
           url
@@ -31,6 +39,8 @@ const PRODUCTS_QUERY = `#graphql
             id
             title
             availableForSale
+            weight
+            weightUnit
             selectedOptions {
               name
               value
@@ -61,6 +71,14 @@ const PRODUCT_QUERY = `#graphql
       title
       description
       availableForSale
+      width: metafield(namespace: "custom", key: "width") {
+        value
+        type
+      }
+      height: metafield(namespace: "custom", key: "height") {
+        value
+        type
+      }
       featuredImage {
         id
         url
@@ -82,6 +100,8 @@ const PRODUCT_QUERY = `#graphql
           id
           title
           availableForSale
+          weight
+          weightUnit
           selectedOptions {
             name
             value
@@ -231,12 +251,20 @@ export function useShopifyStorefront() {
       (product) => product.handle === handle,
     )
 
-    if (existingProduct) {
+    if (existingProduct && hasProductDetails(existingProduct)) {
       return existingProduct
     }
 
     const data = await storefrontFetch(PRODUCT_QUERY, { handle })
     return data.product || null
+  }
+
+  function hasProductDetails(product) {
+    return (
+      'width' in product &&
+      'height' in product &&
+      Boolean(product.variants?.nodes?.every((variant) => 'weight' in variant))
+    )
   }
 
   async function createCart(variantId, quantity = 1) {

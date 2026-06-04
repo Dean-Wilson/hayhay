@@ -6,7 +6,8 @@ This is a basic Nuxt 3 website with:
 
 - Home page
 - Product page with Shopify buy button integration
-- Wholesale page
+- About page with wholesale enquiry section
+- Terms and conditions page linked from About only
 - Contact page
 
 ## Tech Stack
@@ -21,7 +22,8 @@ This is a basic Nuxt 3 website with:
 - `/pages/index.vue` - Home page
 - `/pages/products/index.vue` - Products listing page
 - `/pages/products/[name].vue` - Product detail page with Shopify integration
-- `/pages/wholesale.vue` - Wholesale page
+- `/pages/about.vue` - About page with wholesale enquiry section
+- `/pages/terms-and-conditions.vue` - Terms and conditions page, not included in the primary nav
 - `/pages/contact.vue` - Contact page
 
 ## Naming Conventions
@@ -71,7 +73,6 @@ For nested SCSS, use the `&` ampersand to create nested selectors:
 
 - handle shipping
   - You can connect an Australia Post MyPost Business account to Shopify to purchase shipping labels directly from your admin when you fulfill orders.
-- about page
 - Product fields [/]
   - product description
   - care instructions

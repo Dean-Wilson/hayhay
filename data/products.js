@@ -47,10 +47,10 @@ export const products = [
     featured: false,
   },
   {
-    name: 'stem',
+    name: 'bolt',
     color: 'cobalt',
-    title: 'Stem',
-    description: 'Nature-inspired stem design with clean lines.',
+    title: 'Bolt',
+    description: 'Nature-inspired bolt design with clean lines.',
     price: 399,
     imageCount: 4,
     featured: false,
