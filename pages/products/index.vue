@@ -147,11 +147,12 @@ h1 {
 }
 
 .product-info {
-  padding: 1.5rem;
+  padding: 0.3rem 0.5rem 1rem;
+  text-align: center;
 
   h2 {
     font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    margin: 0;
   }
 
   p {
