@@ -18,8 +18,7 @@
       </section>
 
       <section class="products-cta">
-        <!-- <NuxtLink to="/products" class="btn btn-primary">View products</NuxtLink> -->
-        <p class="products-cta__message">Coming soon...</p>
+        <NuxtLink to="/products" class="btn btn-primary">View products</NuxtLink>
       </section>
     </main>
     <Footer />
@@ -134,12 +133,6 @@
   margin: 0 auto;
   text-align: center;
   padding: 0.75rem 0 3rem;
-
-  &__message {
-    margin: 0;
-    color: $blue-100;
-    font-weight: 600;
-  }
 
   @media screen and (min-width: 900px) {
     padding: 0.75rem 2rem 4rem;

@@ -4,9 +4,9 @@
       <li>
         <NuxtLink to="/">Home</NuxtLink>
       </li>
-      <!-- <li>
+      <li>
         <NuxtLink to="/products">Products</NuxtLink>
-      </li> -->
+      </li>
       <li>
         <NuxtLink to="/about">About</NuxtLink>
       </li>
