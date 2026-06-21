@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Hay Hay Shopify Stock List</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #fffef7;
+      color: #17223b;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 8.6px;
+      line-height: 1.2;
+    }
+
+    .stock-list__header {
+      align-items: flex-end;
+      border-bottom: 2px solid #17223b;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+    }
+
+    .stock-list__logo {
+      display: block;
+      height: 38px;
+      object-fit: contain;
+      object-position: left center;
+      width: 230px;
+    }
+
+    .stock-list__title-block {
+      text-align: right;
+    }
+
+    .stock-list__title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin: 0 0 3px;
+    }
+
+    .stock-list__meta {
+      color: #546173;
+      font-size: 9px;
+      margin: 0;
+    }
+
+    .stock-list__table {
+      border-collapse: collapse;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .stock-list__table th,
+    .stock-list__table td {
+      border-bottom: 1px solid #d8d4c4;
+      padding: 4px 5px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .stock-list__table th {
+      background: #17223b;
+      color: #fffef7;
+      font-size: 7.7px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .stock-list__table tbody tr:nth-child(even) {
+      background: #f5f1df;
+    }
+
+    .stock-list__image-column {
+      width: 46px;
+    }
+
+    .stock-list__name-column {
+      width: 85px;
+    }
+
+    .stock-list__variant-column {
+      width: 145px;
+    }
+
+    .stock-list__size-column {
+      width: 80px;
+    }
+
+    .stock-list__weight-column {
+      width: 64px;
+    }
+
+    .stock-list__available-column {
+      width: 46px;
+    }
+
+    .stock-list__money-column {
+      width: 62px;
+    }
+
+    .stock-list__margin-column {
+      width: 62px;
+    }
+
+    .stock-list__product-image,
+    .stock-list__image-placeholder {
+      aspect-ratio: 1;
+      height: 42px;
+      width: 42px;
+    }
+
+    .stock-list__product-image {
+      background: #fffef7;
+      display: block;
+      object-fit: contain;
+    }
+
+    .stock-list__image-placeholder {
+      align-items: center;
+      background: #efe8cb;
+      border: 1px solid #d8d4c4;
+      color: #546173;
+      display: flex;
+      font-size: 7px;
+      font-weight: 700;
+      justify-content: center;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .stock-list__name,
+    .stock-list__money {
+      font-weight: 700;
+    }
+
+    .stock-list__footer {
+      color: #546173;
+      font-size: 8px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <main class="stock-list">
+    <header class="stock-list__header">
+      <img src="assets/hay-hay-logo.png" alt="Hay Hay" class="stock-list__logo">
+      <div class="stock-list__title-block">
+        <h1 class="stock-list__title">Shopify Stock List</h1>
+        <p class="stock-list__meta">Prepared 19 June 2026 · AUD · variants collapsed</p>
+      </div>
+    </header>
+
+    <table class="stock-list__table">
+      <thead>
+        <tr>
+          <th class="stock-list__image-column">Image</th>
+          <th class="stock-list__name-column">Name</th>
+          <th class="stock-list__variant-column">Colours / variants</th>
+          <th class="stock-list__size-column">Size</th>
+          <th class="stock-list__weight-column">Weight</th>
+          <th class="stock-list__available-column">For sale</th>
+          <th class="stock-list__money-column">RRP</th>
+          <th class="stock-list__money-column">Wholesale</th>
+          <th class="stock-list__money-column">Cost est.</th>
+          <th class="stock-list__margin-column">Wholesale margin</th>
+          <th class="stock-list__margin-column">Retail margin</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/anchor.jpg" alt="Anchor" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Anchor</td>
+          <td>Cobalt Blue</td>
+          <td>19 cm x 21 cm</td>
+          <td>1,569 g</td>
+          <td>Yes</td>
+          <td class="stock-list__money">$140</td>
+          <td class="stock-list__money">$70</td>
+          <td class="stock-list__money">$45.33</td>
+          <td>35.2%</td>
+          <td>67.6%</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/bolt.jpg" alt="Bolt" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Bolt</td>
+          <td>Cobalt Blue</td>
+          <td>19 cm x 22.5 cm</td>
+          <td>662 g</td>
+          <td>Yes</td>
+          <td class="stock-list__money">$90</td>
+          <td class="stock-list__money">$45</td>
+          <td class="stock-list__money">$45.33</td>
+          <td>-0.7%</td>
+          <td>49.6%</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/frill-table-lamp.jpg" alt="Frill Table Lamp" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Frill Table Lamp</td>
+          <td>Default</td>
+          <td>TBC</td>
+          <td>No weight set</td>
+          <td>No</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">TBC</td>
+          <td>TBC</td>
+          <td>TBC</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <div class="stock-list__image-placeholder">Image TBC</div>
+          </td>
+          <td class="stock-list__name">Halo Table Lamp</td>
+          <td>Default</td>
+          <td>TBC</td>
+          <td>No weight set</td>
+          <td>No</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">TBC</td>
+          <td>TBC</td>
+          <td>TBC</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/orb.jpg" alt="Orb" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Orb</td>
+          <td>Cobalt Blue</td>
+          <td>22 cm x 17.5 cm</td>
+          <td>1,328 g</td>
+          <td>Yes</td>
+          <td class="stock-list__money">$140</td>
+          <td class="stock-list__money">$70</td>
+          <td class="stock-list__money">$45.33</td>
+          <td>35.2%</td>
+          <td>67.6%</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/petal.jpg" alt="Petal" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Petal</td>
+          <td>Sky blue</td>
+          <td>19 cm x 22 cm</td>
+          <td>590 g</td>
+          <td>Yes</td>
+          <td class="stock-list__money">$80</td>
+          <td class="stock-list__money">$40</td>
+          <td class="stock-list__money">$45.33</td>
+          <td>-13.3%</td>
+          <td>43.3%</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/pillar-table-lamp.jpg" alt="Pillar Table Lamp" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Pillar Table Lamp</td>
+          <td>Default</td>
+          <td>32 cm x 34 cm</td>
+          <td>2.5 kg</td>
+          <td>No</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">TBC</td>
+          <td>TBC</td>
+          <td>TBC</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/puff.jpg" alt="Puff" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Puff</td>
+          <td>Cobalt Blue, Teal Green, Deep Plum</td>
+          <td>12.5 cm x 22 cm</td>
+          <td>1,031 g</td>
+          <td>Yes</td>
+          <td class="stock-list__money">$140</td>
+          <td class="stock-list__money">$70</td>
+          <td class="stock-list__money">$49.33</td>
+          <td>29.5%</td>
+          <td>64.8%</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <div class="stock-list__image-placeholder">Image TBC</div>
+          </td>
+          <td class="stock-list__name">Spool</td>
+          <td>Default</td>
+          <td>15 cm x 28 cm</td>
+          <td>No weight set</td>
+          <td>No</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">$0</td>
+          <td class="stock-list__money">$45.33</td>
+          <td>TBC</td>
+          <td>TBC</td>
+        </tr>
+
+        <tr>
+          <td class="stock-list__image-cell">
+            <img src="assets/wave.jpg" alt="Wave" class="stock-list__product-image">
+          </td>
+          <td class="stock-list__name">Wave</td>
+          <td>Default</td>
+          <td>13.5 cm x 16 cm</td>
+          <td>680 g</td>
+          <td>No</td>
+          <td class="stock-list__money">$90</td>
+          <td class="stock-list__money">$45</td>
+          <td class="stock-list__money">$45.33</td>
+          <td>-0.7%</td>
+          <td>49.6%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <footer class="stock-list__footer">
+      <span>RRP, product details and images are sourced from Shopify. Wholesale is calculated at 50% of RRP. Cost and margin fields are local estimates.</span>
+    </footer>
+  </main>
+</body>
+</html>
