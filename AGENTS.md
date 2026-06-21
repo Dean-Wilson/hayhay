@@ -17,6 +17,11 @@ This is a basic Nuxt 3 website with:
 - Shopify Buy Button
 - SCSS
 
+## Git And Deployment
+
+- Project override: committing and deploying directly from `main` is allowed for this project when the user asks for a production deploy.
+- Use `npm run deploy` for production deploys.
+
 ## Project Structure
 
 - `/pages/index.vue` - Home page

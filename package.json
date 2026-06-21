@@ -9,6 +9,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "generate:email-assets": "bash scripts/generate-email-signature-assets.sh",
+    "generate:lamp-instructions": "node scripts/generate-lamp-instructions.mjs",
     "generate:logos": "bash scripts/generate-logo-assets.sh",
     "inventory:stock-list": "node scripts/generate-stock-list.mjs",
     "inventory:update": "node scripts/update-shopify-product-inventory.mjs",
