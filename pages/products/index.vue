@@ -49,24 +49,28 @@ onMounted(() => {
 
 const displayProducts = computed(() => {
   if (shopifyProducts.value.length > 0) {
-    return shopifyProducts.value.map((product) => {
-      const image = product.featuredImage || product.images?.nodes?.[0]
+    return shopifyProducts.value
+      .map((product) => {
+        const image = getShopifyProductImage(product)
 
-      return {
-        handle: product.handle,
-        title: product.title,
-        description: product.description,
-        image: image
-          ? {
-              src: image.url,
-              alt: image.altText || product.title,
-              width: image.width,
-              height: image.height,
-              isRemote: true,
-            }
-          : null,
-      }
-    })
+        if (!image) {
+          return null
+        }
+
+        return {
+          handle: product.handle,
+          title: product.title,
+          description: product.description,
+          image: {
+            src: image.url,
+            alt: image.altText || product.title,
+            width: image.width,
+            height: image.height,
+            isRemote: true,
+          },
+        }
+      })
+      .filter(Boolean)
   }
 
   return localProducts.map((product) => ({
@@ -82,6 +86,12 @@ const displayProducts = computed(() => {
     },
   }))
 })
+
+function getShopifyProductImage(product) {
+  return [product.featuredImage, ...(product.images?.nodes || [])].find(
+    (image) => image?.url,
+  )
+}
 </script>
 
 <style scoped lang="scss">
