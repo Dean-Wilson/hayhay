@@ -1,4 +1,4 @@
-const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v2'
+const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v3'
 const PRODUCTS_CACHE_TTL = 1000 * 60 * 15
 
 const PRODUCTS_QUERY = `#graphql

@@ -73,24 +73,52 @@ const displayProducts = computed(() => {
       .filter(Boolean)
   }
 
-  return localProducts.map((product) => ({
-    handle: product.name,
-    title: product.title,
-    description: product.description,
-    image: {
-      src: `/images/products/${product.name}/${
-        getProductImages(product.name, product.color, 1)[0]
-      }`,
-      alt: product.title,
-      isRemote: false,
-    },
-  }))
+  return localProducts
+    .map((product) => {
+      const image = getLocalProductImage(product)
+
+      if (!image) {
+        return null
+      }
+
+      return {
+        handle: product.name,
+        title: product.title,
+        description: product.description,
+        image,
+      }
+    })
+    .filter(Boolean)
 })
 
 function getShopifyProductImage(product) {
-  return [product.featuredImage, ...(product.images?.nodes || [])].find(
-    (image) => image?.url,
-  )
+  return [
+    product.featuredImage,
+    ...(product.images?.nodes || []),
+    ...(product.variants?.nodes || []).map((variant) => variant.image),
+  ].find((image) => hasImageUrl(image))
+}
+
+function getLocalProductImage(product) {
+  if (!product.imageCount) {
+    return null
+  }
+
+  const imageName = getProductImages(product.name, product.color, 1)[0]
+
+  if (!imageName) {
+    return null
+  }
+
+  return {
+    src: `/images/products/${product.name}/${imageName}`,
+    alt: product.title,
+    isRemote: false,
+  }
+}
+
+function hasImageUrl(image) {
+  return typeof image?.url === 'string' && image.url.trim().length > 0
 }
 </script>
 
