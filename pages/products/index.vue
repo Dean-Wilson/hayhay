@@ -27,7 +27,9 @@
             <div class="product-info">
               <h2>{{ product.title }}</h2>
               <!-- <p>{{ product.description }}</p> -->
-              <!-- <span class="price">${{ product.price }}</span> -->
+              <span v-if="product.price" class="product-info__price">
+                {{ product.price }}
+              </span>
             </div>
           </NuxtLink>
         </div>
@@ -52,8 +54,9 @@ const displayProducts = computed(() => {
     return shopifyProducts.value
       .map((product) => {
         const image = getShopifyProductImage(product)
+        const price = formatProductPrice(product)
 
-        if (!image) {
+        if (!image || !price) {
           return null
         }
 
@@ -61,6 +64,7 @@ const displayProducts = computed(() => {
           handle: product.handle,
           title: product.title,
           description: product.description,
+          price,
           image: {
             src: image.url,
             alt: image.altText || product.title,
@@ -85,6 +89,10 @@ const displayProducts = computed(() => {
         handle: product.name,
         title: product.title,
         description: product.description,
+        price: formatPrice({
+          amount: product.price,
+          currencyCode: 'AUD',
+        }),
         image,
       }
     })
@@ -119,6 +127,38 @@ function getLocalProductImage(product) {
 
 function hasImageUrl(image) {
   return typeof image?.url === 'string' && image.url.trim().length > 0
+}
+
+function formatProductPrice(product) {
+  const availableVariant =
+    product.variants?.nodes?.find(
+      (variant) => variant.availableForSale && hasVariantPrice(variant),
+    ) || product.variants?.nodes?.find(hasVariantPrice)
+
+  return formatPrice(availableVariant?.price)
+}
+
+function hasVariantPrice(variant) {
+  return getPriceAmount(variant?.price) > 0
+}
+
+function formatPrice(price) {
+  const amount = getPriceAmount(price)
+
+  if (amount <= 0) {
+    return ''
+  }
+
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: price.currencyCode || 'AUD',
+  }).format(amount)
+}
+
+function getPriceAmount(price) {
+  const amount = Number(price?.amount)
+
+  return Number.isFinite(amount) ? amount : 0
 }
 </script>
 
@@ -198,7 +238,7 @@ h1 {
     line-height: 1.5;
   }
 
-  .price {
+  &__price {
     font-size: 1.25rem;
     font-weight: 600;
   }

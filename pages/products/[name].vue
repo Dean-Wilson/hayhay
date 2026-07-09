@@ -37,6 +37,10 @@
           <h1>{{ displayTitle }}</h1>
           <p class="description">{{ displayDescription }}</p>
 
+          <p v-if="displayPrice" class="product-info__price">
+            {{ displayPrice }}
+          </p>
+
           <dl v-if="productDetails.length" class="product-details">
             <div
               v-for="detail in productDetails"
@@ -65,6 +69,26 @@
                 </option>
               </select>
             </label>
+
+            <p
+              v-if="!selectedVariant?.availableForSale"
+              class="shopify-purchase__status"
+            >
+              Currently unavailable
+            </p>
+
+            <button
+              class="shopify-purchase__button"
+              type="button"
+              :disabled="!canBuy || isBuying"
+              @click="buySelectedVariant"
+            >
+              {{ isBuying ? 'Opening checkout...' : 'Buy now' }}
+            </button>
+
+            <p v-if="purchaseError" class="shopify-purchase__error">
+              {{ purchaseError }}
+            </p>
           </div>
 
           <NuxtLink to="/products" class="back-link">
@@ -93,7 +117,7 @@ import { getProduct, getProductImages } from '~/data/products'
 const route = useRoute()
 const handle = route.params.name
 const localProduct = getProduct(handle)
-const { fetchProducts, fetchProduct } = useShopifyStorefront()
+const { fetchProducts, fetchProduct, createCart } = useShopifyStorefront()
 const remoteProduct = ref(null)
 const localImages = computed(() =>
   localProduct
@@ -106,12 +130,17 @@ const localImages = computed(() =>
 )
 const selectedImageId = ref('')
 const selectedVariantId = ref('')
+const isBuying = ref(false)
+const purchaseError = ref('')
+const hideUnpricedShopifyProduct = ref(false)
 
 const shopifyProduct = computed(() => remoteProduct.value)
 const hasShopifyProduct = computed(() => Boolean(shopifyProduct.value))
-const displayProduct = computed(() => shopifyProduct.value || localProduct)
+const displayProduct = computed(() =>
+  hideUnpricedShopifyProduct.value ? null : shopifyProduct.value || localProduct,
+)
 const shopifyVariants = computed(
-  () => shopifyProduct.value?.variants?.nodes || [],
+  () => (shopifyProduct.value?.variants?.nodes || []).filter(hasVariantPrice),
 )
 const selectedVariant = computed(() =>
   shopifyVariants.value.find(
@@ -143,6 +172,25 @@ const displayDescription = computed(
 const displayTitle = computed(
   () => shopifyProduct.value?.title || localProduct?.title || '',
 )
+const displayPrice = computed(() => {
+  if (selectedVariant.value?.price) {
+    return formatPrice(selectedVariant.value.price)
+  }
+
+  if (localProduct?.price) {
+    return formatPrice({
+      amount: localProduct.price,
+      currencyCode: 'AUD',
+    })
+  }
+
+  return ''
+})
+const canBuy = computed(
+  () =>
+    Boolean(selectedVariant.value?.id) &&
+    selectedVariant.value.availableForSale,
+)
 const productDetails = computed(() =>
   [
     {
@@ -162,7 +210,14 @@ const productDetails = computed(() =>
 
 onMounted(async () => {
   await fetchProducts()
-  remoteProduct.value = await fetchProduct(handle)
+  const product = await fetchProduct(handle)
+
+  if (product && !hasProductPrice(product)) {
+    hideUnpricedShopifyProduct.value = true
+    return
+  }
+
+  remoteProduct.value = product
 })
 
 watchEffect(() => {
@@ -185,6 +240,7 @@ watchEffect(() => {
 })
 
 watch(selectedVariantId, () => {
+  purchaseError.value = ''
   const variantImage = getImageForVariant(selectedVariant.value)
 
   if (variantImage) {
@@ -275,6 +331,30 @@ function selectImage(image) {
   }
 }
 
+async function buySelectedVariant() {
+  if (!canBuy.value || isBuying.value) {
+    return
+  }
+
+  isBuying.value = true
+  purchaseError.value = ''
+
+  try {
+    const cart = await createCart(selectedVariant.value.id)
+
+    if (!cart?.checkoutUrl) {
+      throw new Error('Checkout could not be created.')
+    }
+
+    window.location.href = cart.checkoutUrl
+  } catch (error) {
+    purchaseError.value =
+      error.message || 'Checkout could not be opened. Please try again.'
+  } finally {
+    isBuying.value = false
+  }
+}
+
 function getVariantLabel(variant) {
   const colour = variant.selectedOptions?.find(
     (option) => option.name.toLowerCase() === 'colour',
@@ -346,6 +426,33 @@ function formatVariantWeight(variant) {
       })
 
   return `${formattedWeight} ${units[variant.weightUnit] || variant.weightUnit}`
+}
+
+function hasProductPrice(product) {
+  return product?.variants?.nodes?.some(hasVariantPrice) || false
+}
+
+function hasVariantPrice(variant) {
+  return getPriceAmount(variant?.price) > 0
+}
+
+function formatPrice(price) {
+  const amount = getPriceAmount(price)
+
+  if (amount <= 0) {
+    return ''
+  }
+
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: price.currencyCode || 'AUD',
+  }).format(amount)
+}
+
+function getPriceAmount(price) {
+  const amount = Number(price?.amount)
+
+  return Number.isFinite(amount) ? amount : 0
 }
 </script>
 
@@ -436,6 +543,12 @@ function formatVariantWeight(variant) {
     margin-bottom: 1.5rem;
   }
 
+  &__price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+
   .product-details {
     display: grid;
     gap: 0.75rem;
@@ -479,6 +592,40 @@ function formatVariantWeight(variant) {
       border-radius: 4px;
       background: white;
       font: inherit;
+    }
+
+    &__status {
+      color: $secondary;
+      font-weight: 600;
+    }
+
+    &__button {
+      width: 100%;
+      max-width: 320px;
+      border: 0;
+      border-radius: 4px;
+      background-color: $blue-100;
+      color: white;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 0.9rem 1.25rem;
+      transition:
+        background-color 0.2s,
+        opacity 0.2s;
+
+      &:hover:not(:disabled) {
+        background-color: $orange-100;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+    }
+
+    &__error {
+      color: $error;
+      max-width: 320px;
     }
 
   }

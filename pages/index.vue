@@ -80,6 +80,9 @@
     @media screen and (min-width: 1200px) {
       font-size: 10rem;
     }
+    @media screen and (min-width: 1800px) {
+      font-size: 15rem;
+    }
   }
 
   &__products {
