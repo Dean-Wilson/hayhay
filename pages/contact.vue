@@ -20,6 +20,19 @@
             <a href="tel:0417305607" class="contact-page__link">0417 305 607</a>
           </p>
         </div>
+        <div class="contact-page__item">
+          <h2 class="contact-page__item-title">Instagram</h2>
+          <p class="contact-page__item-text">
+            <a
+              href="https://www.instagram.com/hay_haydesign/"
+              class="contact-page__link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @hay_haydesign
+            </a>
+          </p>
+        </div>
       </div>
     </main>
     <Footer />
@@ -29,7 +42,7 @@
 <script setup>
 usePageSeo(
   'Contact',
-  'Contact hay-hay design for product, ordering and wholesale enquiries by email or phone.',
+  'Contact hay-hay design for product, ordering and wholesale enquiries by email, phone or Instagram.',
 )
 </script>
 
