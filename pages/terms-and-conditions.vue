@@ -67,6 +67,13 @@
   </div>
 </template>
 
+<script setup>
+usePageSeo(
+  'Terms & Conditions',
+  'Read hay-hay design’s terms and conditions covering orders, product details, care instructions, shipping, returns and wholesale purchases.',
+)
+</script>
+
 <style scoped lang="scss">
 .terms-page {
   display: flex;

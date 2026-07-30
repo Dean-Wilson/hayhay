@@ -49,7 +49,7 @@ export default defineNuxtConfig({
         '/',
         '/products',
         '/products/anchor',
-        '/products/dot',
+        '/products/orb',
         '/products/halo',
         '/products/petal',
         '/products/puff',

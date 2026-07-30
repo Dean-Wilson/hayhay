@@ -115,9 +115,9 @@ import { useRoute } from 'vue-router'
 import { getProduct, getProductImages } from '~/data/products'
 
 const route = useRoute()
-const handle = route.params.name
+const handle = String(route.params.name)
 const localProduct = getProduct(handle)
-const { fetchProducts, fetchProduct, createCart } = useShopifyStorefront()
+const { fetchProduct, createCart } = useShopifyStorefront()
 const remoteProduct = ref(null)
 const localImages = computed(() =>
   localProduct
@@ -133,6 +133,13 @@ const selectedVariantId = ref('')
 const isBuying = ref(false)
 const purchaseError = ref('')
 const hideUnpricedShopifyProduct = ref(false)
+
+const { data: initialShopifyProduct } = await useAsyncData(
+  `shopify-product-${handle}`,
+  () => loadShopifyProduct(),
+)
+
+setRemoteProduct(initialShopifyProduct.value)
 
 const shopifyProduct = computed(() => remoteProduct.value)
 const hasShopifyProduct = computed(() => Boolean(shopifyProduct.value))
@@ -207,17 +214,43 @@ const productDetails = computed(() =>
     },
   ].filter((detail) => detail.value),
 )
+const seoTitle = computed(
+  () => shopifyProduct.value?.seo?.title || displayTitle.value || 'Product',
+)
+const seoDescription = computed(
+  () =>
+    shopifyProduct.value?.seo?.description ||
+    displayDescription.value ||
+    'Explore this piece from hay-hay design.',
+)
+const seoImage = computed(
+  () => shopifyProduct.value?.featuredImage?.url || mainImage.value?.src || '',
+)
+
+useSeoMeta({
+  title: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogTitle: () => seoTitle.value,
+  ogDescription: () => seoDescription.value,
+  ogType: 'product',
+  ogImage: () => seoImage.value || undefined,
+  ogImageAlt: () => displayTitle.value || seoTitle.value,
+  robots: () =>
+    displayProduct.value ? 'index, follow' : 'noindex, nofollow',
+  twitterCard: () =>
+    seoImage.value ? 'summary_large_image' : 'summary',
+  twitterTitle: () => seoTitle.value,
+  twitterDescription: () => seoDescription.value,
+  twitterImage: () => seoImage.value || undefined,
+  twitterImageAlt: () => displayTitle.value || seoTitle.value,
+})
 
 onMounted(async () => {
-  await fetchProducts()
-  const product = await fetchProduct(handle)
-
-  if (product && !hasProductPrice(product)) {
-    hideUnpricedShopifyProduct.value = true
+  if (remoteProduct.value || hideUnpricedShopifyProduct.value) {
     return
   }
 
-  remoteProduct.value = product
+  setRemoteProduct(await loadShopifyProduct())
 })
 
 watchEffect(() => {
@@ -271,6 +304,25 @@ function collectShopifyImages() {
   )
 
   return Array.from(imagesById.values())
+}
+
+async function loadShopifyProduct() {
+  try {
+    return await fetchProduct(handle)
+  } catch {
+    return null
+  }
+}
+
+function setRemoteProduct(product) {
+  if (product && !hasProductPrice(product)) {
+    hideUnpricedShopifyProduct.value = true
+    remoteProduct.value = null
+    return
+  }
+
+  hideUnpricedShopifyProduct.value = false
+  remoteProduct.value = product || null
 }
 
 function getVariantImageId(variant) {

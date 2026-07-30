@@ -34,7 +34,10 @@
 </template>
 
 <script setup>
-//
+usePageSeo(
+  'About & Wholesale',
+  'Discover hay-hay design’s approach to bold, tactile objects for considered interiors, and enquire about wholesale availability and ordering.',
+)
 </script>
 
 <style scoped lang="scss">

@@ -25,6 +25,13 @@
   </div>
 </template>
 
+<script setup>
+usePageSeo(
+  'Bold, Tactile Objects',
+  'Explore bold, tactile, hand-flocked objects from hay-hay design, created for considered interiors with playful colour and sculptural form.',
+)
+</script>
+
 <style scoped lang="scss">
 .home {
   display: flex;

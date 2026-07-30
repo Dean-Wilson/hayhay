@@ -9,10 +9,10 @@ export const products = [
     featured: true,
   },
   {
-    name: 'dot',
+    name: 'orb',
     color: 'cobalt',
-    title: 'Dot',
-    description: 'Contemporary dot piece with bold statement design.',
+    title: 'Orb',
+    description: 'Contemporary orb piece with bold statement design.',
     price: 349,
     imageCount: 4,
     featured: true,

@@ -27,7 +27,10 @@
 </template>
 
 <script setup>
-//
+usePageSeo(
+  'Contact',
+  'Contact hay-hay design for product, ordering and wholesale enquiries by email or phone.',
+)
 </script>
 
 <style scoped lang="scss">

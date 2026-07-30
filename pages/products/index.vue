@@ -4,35 +4,11 @@
     <main class="main-content">
       <h1>Our Products</h1>
       <div class="products-grid">
-        <div
+        <ProductCard
           v-for="product in displayProducts"
           :key="product.handle"
-          class="product-card"
-        >
-          <NuxtLink :to="`/products/${product.handle}`" class="product-link">
-            <div class="product-image">
-              <img
-                v-if="product.image?.isRemote"
-                :src="product.image.src"
-                :alt="product.image.alt"
-                :width="product.image.width"
-                :height="product.image.height"
-              />
-              <img
-                v-else-if="product.image"
-                :src="product.image.src"
-                :alt="product.image.alt"
-              />
-            </div>
-            <div class="product-info">
-              <h2>{{ product.title }}</h2>
-              <!-- <p>{{ product.description }}</p> -->
-              <span v-if="product.price" class="product-info__price">
-                {{ product.price }}
-              </span>
-            </div>
-          </NuxtLink>
-        </div>
+          :product="product"
+        />
       </div>
     </main>
     <Footer />
@@ -43,7 +19,17 @@
 import { computed, onMounted } from 'vue'
 import { products as localProducts, getProductImages } from '~/data/products'
 
+usePageSeo(
+  'Products',
+  'Explore bold, tactile pieces from hay-hay design—hand-flocked sculptural objects shaped by playful colour, rounded forms and unexpected texture.',
+)
+
 const { products: shopifyProducts, fetchProducts } = useShopifyStorefront()
+
+await useAsyncData('shopify-products-page', async () => {
+  await fetchProducts()
+  return true
+})
 
 onMounted(() => {
   fetchProducts()
@@ -53,10 +39,10 @@ const displayProducts = computed(() => {
   if (shopifyProducts.value.length > 0) {
     return shopifyProducts.value
       .map((product) => {
-        const image = getShopifyProductImage(product)
+        const slides = getShopifyProductSlides(product)
         const price = formatProductPrice(product)
 
-        if (!image || !price) {
+        if (slides.length === 0 || !price) {
           return null
         }
 
@@ -65,13 +51,7 @@ const displayProducts = computed(() => {
           title: product.title,
           description: product.description,
           price,
-          image: {
-            src: image.url,
-            alt: image.altText || product.title,
-            width: image.width,
-            height: image.height,
-            isRemote: true,
-          },
+          slides,
         }
       })
       .filter(Boolean)
@@ -93,11 +73,98 @@ const displayProducts = computed(() => {
           amount: product.price,
           currencyCode: 'AUD',
         }),
-        image,
+        slides: [
+          {
+            id: `${product.name}-${product.color}`,
+            label: product.color,
+            swatchColor: '',
+            image,
+          },
+        ],
       }
     })
     .filter(Boolean)
 })
+
+function getShopifyProductSlides(product) {
+  const primaryImage = getShopifyProductImage(product)
+
+  if (!primaryImage) {
+    return []
+  }
+
+  const colourOption = product.options?.find((option) =>
+    /^colou?r$/i.test(option.name.trim()),
+  )
+
+  if (!colourOption || colourOption.optionValues.length < 2) {
+    return [createShopifySlide(product, null, primaryImage)]
+  }
+
+  const slides = colourOption.optionValues
+    .map((optionValue) => {
+      const variant = getVariantForOptionValue(
+        product.variants?.nodes || [],
+        colourOption.name,
+        optionValue.name,
+      )
+
+      if (!variant) {
+        return null
+      }
+
+      const image = hasImageUrl(variant.image) ? variant.image : primaryImage
+
+      return createShopifySlide(product, variant, image, optionValue)
+    })
+    .filter(Boolean)
+
+  return slides.length > 0
+    ? slides
+    : [createShopifySlide(product, null, primaryImage)]
+}
+
+function createShopifySlide(product, variant, image, optionValue = null) {
+  const colourName = optionValue?.name || ''
+
+  return {
+    id: optionValue?.id || variant?.id || image.id || product.id,
+    label: colourName,
+    swatchColor: normalizeSwatchColor(optionValue?.swatch?.color),
+    price: formatPrice(variant?.price),
+    image: {
+      src: image.url,
+      alt:
+        image.altText ||
+        (colourName ? `${product.title} in ${colourName}` : product.title),
+      width: image.width,
+      height: image.height,
+    },
+  }
+}
+
+function getVariantForOptionValue(variants, optionName, optionValue) {
+  const matchingVariants = variants.filter((variant) =>
+    variant.selectedOptions?.some(
+      (selectedOption) =>
+        selectedOption.name.toLowerCase() === optionName.toLowerCase() &&
+        selectedOption.value.toLowerCase() === optionValue.toLowerCase(),
+    ),
+  )
+
+  return (
+    matchingVariants.find(
+      (variant) =>
+        variant.availableForSale &&
+        hasImageUrl(variant.image) &&
+        hasVariantPrice(variant),
+    ) ||
+    matchingVariants.find(
+      (variant) => hasImageUrl(variant.image) && hasVariantPrice(variant),
+    ) ||
+    matchingVariants[0]
+  )
+}
 
 function getShopifyProductImage(product) {
   return [
@@ -105,6 +172,17 @@ function getShopifyProductImage(product) {
     ...(product.images?.nodes || []),
     ...(product.variants?.nodes || []).map((variant) => variant.image),
   ].find((image) => hasImageUrl(image))
+}
+
+function normalizeSwatchColor(color) {
+  if (
+    typeof color === 'string' &&
+    /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(color)
+  ) {
+    return color
+  }
+
+  return '#d8d8d8'
 }
 
 function getLocalProductImage(product) {
@@ -187,60 +265,5 @@ h1 {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
-}
-
-.product-card {
-  border-radius: 8px;
-  overflow: hidden;
-  transition:
-    transform 0.3s,
-    box-shadow 0.3s;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.product-link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-
-.product-image {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-  }
-}
-
-.product-info {
-  padding: 0.3rem 0.5rem 1rem;
-  text-align: center;
-
-  h2 {
-    font-size: 1.5rem;
-    margin: 0;
-  }
-
-  p {
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-
-  &__price {
-    font-size: 1.25rem;
-    font-weight: 600;
-  }
 }
 </style>

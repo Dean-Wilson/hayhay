@@ -201,7 +201,8 @@ ${remote_public_dir}
 Build command:
 npm run generate
 
-Shopify product data is fetched in the browser with the public Storefront API token.
+Shopify product data is fetched during static generation and refreshed in the
+browser with the public Storefront API token.
 README
 REMOTE_SCRIPT
 

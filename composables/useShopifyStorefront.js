@@ -1,4 +1,4 @@
-const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v3'
+const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v5'
 const PRODUCTS_CACHE_TTL = 1000 * 60 * 15
 
 const PRODUCTS_QUERY = `#graphql
@@ -10,6 +10,10 @@ const PRODUCTS_QUERY = `#graphql
         title
         description
         availableForSale
+        seo {
+          title
+          description
+        }
         width: metafield(namespace: "custom", key: "width") {
           value
           type
@@ -32,6 +36,16 @@ const PRODUCTS_QUERY = `#graphql
             altText
             width
             height
+          }
+        }
+        options {
+          name
+          optionValues {
+            id
+            name
+            swatch {
+              color
+            }
           }
         }
         variants(first: 20) {
@@ -71,6 +85,10 @@ const PRODUCT_QUERY = `#graphql
       title
       description
       availableForSale
+      seo {
+        title
+        description
+      }
       width: metafield(namespace: "custom", key: "width") {
         value
         type
@@ -93,6 +111,16 @@ const PRODUCT_QUERY = `#graphql
           altText
           width
           height
+        }
+      }
+      options {
+        name
+        optionValues {
+          id
+          name
+          swatch {
+            color
+          }
         }
       }
       variants(first: 20) {
