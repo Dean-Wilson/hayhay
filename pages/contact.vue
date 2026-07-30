@@ -67,8 +67,9 @@ usePageSeo(
   }
 
   &__details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 2rem;
     margin-top: 2rem;
   }
@@ -90,6 +91,14 @@ usePageSeo(
 
     &:hover {
       color: #666;
+    }
+  }
+}
+
+@media (width <= 768px) {
+  .contact-page {
+    &__details {
+      flex-direction: column;
     }
   }
 }
