@@ -18,6 +18,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { products as localProducts, getProductImages } from '~/data/products'
+import { buildProductImageAlt } from '~/utils/productSeo'
 
 usePageSeo(
   'Products',
@@ -88,6 +89,7 @@ const displayProducts = computed(() => {
 
 function getShopifyProductSlides(product) {
   const primaryImage = getShopifyProductImage(product)
+  const primaryVariant = getPrimaryVariant(product)
 
   if (!primaryImage) {
     return []
@@ -98,7 +100,7 @@ function getShopifyProductSlides(product) {
   )
 
   if (!colourOption || colourOption.optionValues.length < 2) {
-    return [createShopifySlide(product, null, primaryImage)]
+    return [createShopifySlide(product, primaryVariant, primaryImage)]
   }
 
   const slides = colourOption.optionValues
@@ -121,7 +123,20 @@ function getShopifyProductSlides(product) {
 
   return slides.length > 0
     ? slides
-    : [createShopifySlide(product, null, primaryImage)]
+    : [createShopifySlide(product, primaryVariant, primaryImage)]
+}
+
+function getPrimaryVariant(product) {
+  const variants = product.variants?.nodes || []
+
+  return (
+    variants.find(
+      (variant) => variant.availableForSale && hasVariantPrice(variant),
+    ) ||
+    variants.find(hasVariantPrice) ||
+    variants[0] ||
+    null
+  )
 }
 
 function createShopifySlide(product, variant, image, optionValue = null) {
@@ -134,9 +149,7 @@ function createShopifySlide(product, variant, image, optionValue = null) {
     price: formatPrice(variant?.price),
     image: {
       src: image.url,
-      alt:
-        image.altText ||
-        (colourName ? `${product.title} in ${colourName}` : product.title),
+      alt: buildProductImageAlt({ product, image, variant }),
       width: image.width,
       height: image.height,
     },

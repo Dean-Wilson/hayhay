@@ -1,4 +1,4 @@
-const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v5'
+const PRODUCTS_CACHE_KEY = 'hayhay:shopify-products:v6'
 const PRODUCTS_CACHE_TTL = 1000 * 60 * 15
 
 const PRODUCTS_QUERY = `#graphql
@@ -10,6 +10,11 @@ const PRODUCTS_QUERY = `#graphql
         title
         description
         availableForSale
+        productType
+        vendor
+        category {
+          name
+        }
         seo {
           title
           description
@@ -52,6 +57,7 @@ const PRODUCTS_QUERY = `#graphql
           nodes {
             id
             title
+            sku
             availableForSale
             weight
             weightUnit
@@ -85,6 +91,11 @@ const PRODUCT_QUERY = `#graphql
       title
       description
       availableForSale
+      productType
+      vendor
+      category {
+        name
+      }
       seo {
         title
         description
@@ -127,6 +138,7 @@ const PRODUCT_QUERY = `#graphql
         nodes {
           id
           title
+          sku
           availableForSale
           weight
           weightUnit

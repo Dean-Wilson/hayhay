@@ -15,7 +15,8 @@
     "inventory:update": "node scripts/update-shopify-product-inventory.mjs",
     "inventory:wholesale-list": "node scripts/generate-wholesale-price-list.mjs",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "node --test"
   },
   "dependencies": {
     "nuxt": "^4.2.2",

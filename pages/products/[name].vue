@@ -20,14 +20,17 @@
             <button
               v-for="image in galleryImages"
               :key="image.id"
+              type="button"
+              :aria-label="`Show ${image.alt}`"
+              :aria-pressed="selectedImageId === image.id"
               @click="selectImage(image)"
               :class="['thumbnail', { active: selectedImageId === image.id }]"
             >
-              <img v-if="image.isRemote" :src="image.src" :alt="image.alt" />
+              <img v-if="image.isRemote" :src="image.src" alt="" />
               <img
                 v-else
                 :src="image.src"
-                :alt="image.alt"
+                alt=""
               />
             </button>
           </div>
@@ -113,7 +116,13 @@
 import { ref, computed, onMounted, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { getProduct, getProductImages } from '~/data/products'
+import {
+  buildProductImageAlt,
+  buildProductStructuredData,
+  serializeJsonLd,
+} from '~/utils/productSeo'
 
+const SITE_URL = 'https://hayhaydesign.com.au'
 const route = useRoute()
 const handle = String(route.params.name)
 const localProduct = getProduct(handle)
@@ -226,6 +235,21 @@ const seoDescription = computed(
 const seoImage = computed(
   () => shopifyProduct.value?.featuredImage?.url || mainImage.value?.src || '',
 )
+const structuredDataVariant = computed(
+  () =>
+    selectedVariant.value ||
+    shopifyVariants.value.find((variant) => variant.availableForSale) ||
+    shopifyVariants.value[0],
+)
+const productUrl = new URL(`/products/${handle}`, SITE_URL).href
+const productStructuredData = computed(() =>
+  buildProductStructuredData({
+    product: displayProduct.value,
+    variant: structuredDataVariant.value,
+    images: galleryImages.value,
+    url: productUrl,
+  }),
+)
 
 useSeoMeta({
   title: () => seoTitle.value,
@@ -234,7 +258,7 @@ useSeoMeta({
   ogDescription: () => seoDescription.value,
   ogType: 'product',
   ogImage: () => seoImage.value || undefined,
-  ogImageAlt: () => displayTitle.value || seoTitle.value,
+  ogImageAlt: () => mainImage.value?.alt || displayTitle.value || seoTitle.value,
   robots: () =>
     displayProduct.value ? 'index, follow' : 'noindex, nofollow',
   twitterCard: () =>
@@ -242,8 +266,21 @@ useSeoMeta({
   twitterTitle: () => seoTitle.value,
   twitterDescription: () => seoDescription.value,
   twitterImage: () => seoImage.value || undefined,
-  twitterImageAlt: () => displayTitle.value || seoTitle.value,
+  twitterImageAlt: () =>
+    mainImage.value?.alt || displayTitle.value || seoTitle.value,
 })
+
+useHead(() => ({
+  script: productStructuredData.value
+    ? [
+        {
+          key: 'product-structured-data',
+          type: 'application/ld+json',
+          innerHTML: serializeJsonLd(productStructuredData.value),
+        },
+      ]
+    : [],
+}))
 
 onMounted(async () => {
   if (remoteProduct.value || hideUnpricedShopifyProduct.value) {
@@ -283,8 +320,13 @@ watch(selectedVariantId, () => {
 
 function collectShopifyImages() {
   const imagesById = new Map()
+  const variants = shopifyVariants.value
+  const findImageVariant = (image) =>
+    variants.find(
+      (variant) => getVariantImageId(variant) === (image?.id || image?.url),
+    ) || (variants.length === 1 ? variants[0] : null)
 
-  const addImage = (image, fallbackAlt = displayTitle.value) => {
+  const addImage = (image, variant = findImageVariant(image)) => {
     if (!image?.url) {
       return
     }
@@ -292,7 +334,11 @@ function collectShopifyImages() {
     imagesById.set(image.id || image.url, {
       id: image.id || image.url,
       src: image.url,
-      alt: image.altText || fallbackAlt,
+      alt: buildProductImageAlt({
+        product: shopifyProduct.value,
+        image,
+        variant,
+      }),
       isRemote: true,
     })
   }
@@ -300,7 +346,7 @@ function collectShopifyImages() {
   addImage(shopifyProduct.value?.featuredImage)
   shopifyProduct.value?.images?.nodes?.forEach((image) => addImage(image))
   shopifyVariants.value.forEach((variant) =>
-    addImage(variant.image, getVariantLabel(variant)),
+    addImage(variant.image, variant),
   )
 
   return Array.from(imagesById.values())
