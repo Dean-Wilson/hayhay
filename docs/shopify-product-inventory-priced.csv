@@ -1,13 +1,13 @@
-Name,Handle,Variant,Size,Weight,Available for sale,Image URL,Matched Product,Size Category,Cost,Wholesale Price,Retail Price,Wholesale Profit,Retail Profit,Wholesale Margin %,Retail Margin %
-Puff,puff,Cobalt Blue,12.5 cm x 22 cm,"1,031 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign.jpg?v=1780543573,Puff,Large,49.33,70,140,20.67,90.67,29.5,64.8
-Puff,puff,Teal Green,12.5 cm x 22 cm,"1,031 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign.jpg?v=1780543573,Puff,Large,49.33,70,140,20.67,90.67,29.5,64.8
-Puff,puff,Deep Plum,12.5 cm x 22 cm,"1,031 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign.jpg?v=1780543573,Puff,Large,49.33,70,140,20.67,90.67,29.5,64.8
-Petal,petal,Sky blue,19 cm x 22 cm,590 g,Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/petalskyblue_acc580df-5aa0-4d26-8b2f-3743dab161ca.jpg?v=1780543612,Petal,Medium,45.33,40,80,-5.33,34.67,-13.3,43.3
-Bolt,bolt,Cobalt Blue,19 cm x 22.5 cm,662 g,Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/boltcobalt.jpg?v=1780543301,Bolt,Small,45.33,45,90,-0.33,44.67,-0.7,49.6
-Anchor,anchor,Cobalt Blue,19 cm x 21 cm,"1,569 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/anchorcobalt.jpg?v=1780542741,Anchor,Large,45.33,70,140,24.67,94.67,35.2,67.6
-Orb,orb,Cobalt Blue,22 cm x 17.5 cm,"1,328 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign_2_f5e54f10-090b-4ca4-8e54-2a7afa3d3b29.jpg?v=1780545921,Orb,Large,45.33,70,140,24.67,94.67,35.2,67.6
-Halo Table Lamp,halo-lamp,Default Title,,No weight set,No,,Halo Table Lamp,,,0,0,,,,
-Pillar Table Lamp,pillar-table-lamp,Default Title,32 cm x 34 cm,2.5 kg,No,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign.png?v=1781571632,Pillar Table Lamp,,,0,0,,,,
-Frill Table Lamp,frill-table-lamp,Default Title,,No weight set,No,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/lampFrillTeal.png?v=1781577530,Frill Table Lamp,,,0,0,,,,
-Wave,wave,Default Title,13.5 cm x 16 cm,680 g,No,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Vasewaveteal.png?v=1781571176,Wave,Small,45.33,45,90,-0.33,44.67,-0.7,49.6
-Spool,spool,Default Title,15 cm x 28 cm,No weight set,No,,Spool,Excluded,45.33,0,0,-45.33,-45.33,,
+Name,Handle,Variant,Size,Weight,Available for sale,Image URL,Matched Product,Size Category,Wholesale Pricing,Cost,Wholesale Price,Retail Price,Wholesale Profit,Retail Profit,Wholesale Margin %,Retail Margin %
+Puff,puff,Cobalt Blue,12.5 cm x 22 cm,"1,031 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/puff-cobalt.jpg?v=1785037560,Puff,Large,50% RRP estimate,52.83,70,140,17.17,87.17,24.5,62.3
+Puff,puff,Teal Green,12.5 cm x 22 cm,"1,031 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/puff-teal-green-1.jpg?v=1785370661,Puff,Large,50% RRP estimate,52.83,70,140,17.17,87.17,24.5,62.3
+Puff,puff,Deep Plum,12.5 cm x 22 cm,"1,031 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/puff-deep-plum-1.jpg?v=1785370788,Puff,Large,50% RRP estimate,52.83,70,140,17.17,87.17,24.5,62.3
+Petal,petal,Sky blue,19 cm x 22 cm,590 g,Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/petalskyblue.jpg?v=1780543511,Petal,Medium,50% RRP estimate,48.83,40,80,-8.83,31.17,-22.1,39
+Bolt,bolt,Cobalt Blue,19 cm x 22.5 cm,662 g,Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/boltcobalt.jpg?v=1780543301,Bolt,Small,50% RRP estimate,48.83,45,90,-3.83,41.17,-8.5,45.7
+Anchor,anchor,Cobalt Blue,19 cm x 21 cm,"1,569 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/anchor-cobalt-blue.jpg?v=1785369786,Anchor,Large,50% RRP estimate,48.83,70,140,21.17,91.17,30.2,65.1
+Orb,orb,Cobalt Blue,22 cm x 17.5 cm,"1,328 g",Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign_2_f5e54f10-090b-4ca4-8e54-2a7afa3d3b29.jpg?v=1780545921,Orb,Large,50% RRP estimate,48.83,70,140,21.17,91.17,30.2,65.1
+Halo Table Lamp,halo-lamp,Default Title,,No weight set,Yes,,Halo Table Lamp,,Not set,142,,270,,128,,47.4
+Pillar Table Lamp,pillar-table-lamp,Default Title,32 cm x 34 cm,2.5 kg,Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Untitleddesign.png?v=1781571632,Pillar Table Lamp,,Not set,116,,220,,104,,47.3
+Frill Table Lamp,frill-table-lamp,Default Title,,No weight set,Yes,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/lampFrillTeal.png?v=1781577530,Frill Table Lamp,,Not set,142,,270,,128,,47.4
+Wave,wave,Default Title,13.5 cm x 16 cm,680 g,No,https://cdn.shopify.com/s/files/1/0717/1650/3594/files/Vasewaveteal.png?v=1781571176,Wave,Small,50% RRP estimate,48.83,45,90,-3.83,41.17,-8.5,45.7
+Spool,spool,Default Title,15 cm x 28 cm,No weight set,No,,Spool,Excluded,Excluded,48.83,,0,,,,

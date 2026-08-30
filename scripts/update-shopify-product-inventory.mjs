@@ -33,6 +33,7 @@ const pricedInventoryHeaders = [
   'Image URL',
   'Matched Product',
   'Size Category',
+  'Wholesale Pricing',
   'Cost',
   'Wholesale Price',
   'Retail Price',
@@ -437,8 +438,7 @@ function buildRows(products, existingPricedRows) {
         ]
 
     for (const variant of variants) {
-      const retailPrice = Number(variant.price?.amount)
-      const wholesalePrice = Number.isFinite(retailPrice) ? retailPrice * 0.5 : NaN
+      const shopifyRetailPrice = Number(variant.price?.amount)
       const imageUrl = variant.image?.url || product.featuredImage?.url || ''
       const baseRow = {
         Name: product.title,
@@ -446,21 +446,30 @@ function buildRows(products, existingPricedRows) {
         Variant: variantLabel(variant),
         Size: formatSize(product, variant),
         Weight: formatWeight(variant),
-        'Retail Price': formatCurrencyNumber(retailPrice),
+        'Retail Price': formatCurrencyNumber(shopifyRetailPrice),
         Currency: variant.price?.currencyCode || '',
         'Available for sale': variant.availableForSale ? 'Yes' : 'No',
         'Image URL': imageUrl,
       }
       const local = localRowFor(baseRow, localLookup)
-      const cost =
-        String(local.Cost || '').trim() === '0' && !local['Size Category']
-          ? NaN
-          : parseLocalNumber(local.Cost)
+      const retailPrice = shopifyRetailPrice
+      const wholesalePricing =
+        local['Wholesale Pricing'] ||
+        (local['Size Category'] === 'Excluded'
+          ? 'Excluded'
+          : '50% RRP estimate')
+      const wholesalePrice =
+        wholesalePricing === '50% RRP estimate' && retailPrice > 0
+          ? retailPrice * 0.5
+          : NaN
+      const cost = parseLocalNumber(local.Cost)
       const hasCost = Number.isFinite(cost)
       const wholesaleProfit =
         hasCost && Number.isFinite(wholesalePrice) ? wholesalePrice - cost : NaN
       const retailProfit =
-        hasCost && Number.isFinite(retailPrice) ? retailPrice - cost : NaN
+        hasCost && Number.isFinite(retailPrice) && retailPrice > 0
+          ? retailPrice - cost
+          : NaN
 
       simpleRows.push(baseRow)
       pricedRows.push({
@@ -473,6 +482,7 @@ function buildRows(products, existingPricedRows) {
         'Image URL': baseRow['Image URL'],
         'Matched Product': local['Matched Product'] || product.title,
         'Size Category': local['Size Category'] || '',
+        'Wholesale Pricing': wholesalePricing,
         Cost: hasCost ? formatCurrencyNumber(cost) : '',
         'Wholesale Price': formatCurrencyNumber(wholesalePrice),
         'Retail Price': formatCurrencyNumber(retailPrice),
@@ -490,7 +500,9 @@ function buildRows(products, existingPricedRows) {
 function summarize(pricedRows) {
   return {
     rows: pricedRows.length,
-    missingRetailPrice: pricedRows.filter((row) => !row['Retail Price']).length,
+    missingRetailPrice: pricedRows.filter(
+      (row) => !(Number(row['Retail Price']) > 0),
+    ).length,
     missingCost: pricedRows.filter((row) => !row.Cost).length,
     missingWeight: pricedRows.filter((row) => row.Weight === 'No weight set').length,
     missingImage: pricedRows.filter((row) => !row['Image URL']).length,

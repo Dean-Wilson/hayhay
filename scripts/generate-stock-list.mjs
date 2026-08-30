@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import sharp from 'sharp'
+import { spawn } from 'node:child_process'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
@@ -142,6 +142,19 @@ function formatMoneyRange(values) {
   return `${formatMoney(amounts[0])}-${formatMoney(amounts[amounts.length - 1])}`
 }
 
+function displayWholesaleValue(group, field, formatter) {
+  const values = group.map((row) => row[field])
+  const hasValue = values.some((value) => String(value || '').trim() !== '')
+
+  if (hasValue) {
+    return formatter(values)
+  }
+
+  return group.some((row) => row['Wholesale Pricing'] === 'Not set')
+    ? 'Not set'
+    : 'TBC'
+}
+
 function displayNumericRange(values, suffix = '') {
   const amounts = unique(values)
     .map(Number)
@@ -187,9 +200,17 @@ function groupRows(rows) {
           ? 'Yes'
           : 'No',
         retailPrice: formatMoneyRange(group.map((row) => row['Retail Price'])),
-        wholesalePrice: formatMoneyRange(group.map((row) => row['Wholesale Price'])),
+        wholesalePrice: displayWholesaleValue(
+          group,
+          'Wholesale Price',
+          formatMoneyRange,
+        ),
         cost: formatMoneyRange(group.map((row) => row.Cost)),
-        wholesaleMargin: displayNumericRange(group.map((row) => row['Wholesale Margin %']), '%'),
+        wholesaleMargin: displayWholesaleValue(
+          group,
+          'Wholesale Margin %',
+          (values) => displayNumericRange(values, '%'),
+        ),
         retailMargin: displayNumericRange(group.map((row) => row['Retail Margin %']), '%'),
         imageUrl: group.find((row) => row['Image URL'])?.['Image URL'] || '',
       }
@@ -208,28 +229,64 @@ async function downloadAndPrepareImage(imageUrl, outputPath) {
     return ''
   }
 
-  const source = Buffer.from(await response.arrayBuffer())
+  const sourcePath = `${outputPath}.download`
 
-  await sharp(source)
-    .resize({
-      width: 300,
-      height: 300,
-      fit: 'contain',
-      background: '#fffef7',
-    })
-    .jpeg({ quality: 86 })
-    .toFile(outputPath)
+  await fs.writeFile(sourcePath, Buffer.from(await response.arrayBuffer()))
+
+  try {
+    await resizeOrCopyImage(sourcePath, outputPath, 300)
+  } finally {
+    await fs.unlink(sourcePath).catch(() => {})
+  }
 
   return outputPath
+}
+
+async function runProcess(executable, args) {
+  await new Promise((resolve, reject) => {
+    const child = spawn(executable, args, { stdio: ['ignore', 'ignore', 'pipe'] })
+    let stderr = ''
+
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk
+    })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve()
+        return
+      }
+
+      reject(new Error(`Image preparation failed with exit code ${code}: ${stderr}`))
+    })
+  })
+}
+
+async function resizeOrCopyImage(sourcePath, outputPath, maxDimension) {
+  const sipsPath = '/usr/bin/sips'
+
+  if (existsSync(sipsPath)) {
+    await runProcess(sipsPath, [
+      '-Z',
+      String(maxDimension),
+      sourcePath,
+      '--out',
+      outputPath,
+    ])
+    return
+  }
+
+  await fs.copyFile(sourcePath, outputPath)
 }
 
 async function prepareAssets(rows) {
   await fs.mkdir(assetDir, { recursive: true })
 
-  await sharp(logoSourcePath)
-    .resize({ width: 760, withoutEnlargement: true })
-    .png()
-    .toFile(path.join(assetDir, 'hay-hay-logo.png'))
+  await resizeOrCopyImage(
+    logoSourcePath,
+    path.join(assetDir, 'hay-hay-logo.png'),
+    760,
+  )
 
   for (const row of rows) {
     const fileName = `${normalizeText(row.handle)}.jpg`
@@ -458,7 +515,7 @@ async function writeHtml(rows) {
     </table>
 
     <footer class="stock-list__footer">
-      <span>RRP, product details and images are sourced from Shopify. Wholesale is calculated at 50% of RRP. Cost and margin fields are local estimates.</span>
+      <span>RRP, product details and images are sourced from Shopify. Vase wholesale figures are historical 50%-of-RRP estimates; lamp wholesale pricing is not yet set. Costs include production labour and a $3.50 packaging allowance; retail margins exclude outbound postage.</span>
     </footer>
   </main>
 </body>
@@ -466,6 +523,59 @@ async function writeHtml(rows) {
 `
 
   await fs.writeFile(outputHtmlPath, html, 'utf8')
+}
+
+async function findChromeExecutable() {
+  const candidates = [
+    process.env.CHROME_PATH,
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+  ].filter(Boolean)
+
+  for (const candidate of candidates) {
+    try {
+      await fs.access(candidate)
+      return candidate
+    } catch {
+      // Continue to the next known Chrome/Chromium path.
+    }
+  }
+
+  throw new Error(
+    'Chrome or Chromium was not found. Set CHROME_PATH to enable PDF generation.',
+  )
+}
+
+async function writePdf() {
+  const chromeExecutable = await findChromeExecutable()
+  const args = [
+    '--headless=new',
+    '--disable-gpu',
+    '--no-pdf-header-footer',
+    `--print-to-pdf=${outputPdfPath}`,
+    pathToFileURL(outputHtmlPath).href,
+  ]
+
+  await new Promise((resolve, reject) => {
+    const child = spawn(chromeExecutable, args, { stdio: ['ignore', 'pipe', 'pipe'] })
+    let stderr = ''
+
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk
+    })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve()
+        return
+      }
+
+      reject(new Error(`PDF generation failed with exit code ${code}: ${stderr}`))
+    })
+  })
 }
 
 async function main() {
@@ -479,6 +589,7 @@ async function main() {
 
   await prepareAssets(rows)
   await writeHtml(rows)
+  await writePdf()
 
   console.log(JSON.stringify({ html: outputHtmlPath, pdf: outputPdfPath, rows }, null, 2))
 }
